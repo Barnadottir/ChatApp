@@ -11,8 +11,8 @@ interface User {
 
 const Login = ():JSX.Element => {
   const [user,setUser] = useState<User>({
-    email: 'Email...',
-    password: 'Password...',
+    email: 'oskar.hemma@gmail.com',
+    password: 'hfcerx123',
   })
   const navigate = useNavigate();
   const createNewUser = async (): Promise<any> => {

@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { db } from '../../Firebase'
-import { QuerySnapshot, collection, getDocs } from "firebase/firestore";
 import { Users } from '../../types/databaseTypes';
+import { getUsers } from '../../databaseQueries'
+import { useAuth } from '../../contexts';
+interface SidebarProps {
+  setCurrentChat: (value: string | ((prevVar: string | null) => string)) => void
+}
 
-const Sidebar = ():JSX.Element => {
+const Sidebar = ({ setCurrentChat }: SidebarProps):JSX.Element => {
   const [users,setUsers] = useState<Users[] | null>(null)
-
-  const getUsers = async () => {
+  const { currentUser: loggedInUser } = useAuth()
+  const getUserData = async () => {
     try {
-      const querySnapshot: QuerySnapshot =  await getDocs(collection(db,'users'))
-      const usersArray: Array<Users> = []
-      querySnapshot.forEach((doc) => {
-        usersArray.push(doc.data() as Users)
-        console.log(doc.data());
-      })
-      setUsers(usersArray)
+      const temp: void | Users[] = await getUsers()
+      if (temp) setUsers(temp)
     }
     catch (e) {
       console.error(e)
@@ -22,9 +20,9 @@ const Sidebar = ():JSX.Element => {
   }
 
   useEffect(() => {
-    getUsers()
+    getUserData()
   },[])
-  console.log(users);
+  
   return (
     <div className='sticky left-0 flex flex-col justify-center items-strech h-screen bg-slate-700'>
         <h1>Sidebar</h1>
@@ -32,8 +30,10 @@ const Sidebar = ():JSX.Element => {
         {
         users ?
           users.map(({email}: Users) => (
-            <div key={email}>{email}</div> // Assuming email is unique; otherwise, use a different unique key
-          )) :
+            loggedInUser?.email !== email ? (
+              <div onClick={() => setCurrentChat(email)} key={email} className='hover:text-gray-600'>{email}</div>
+          ): null)
+            ):
           'no users data'
         }
         </div>
